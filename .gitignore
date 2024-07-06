@@ -4,3 +4,4 @@ htmlcov/
 .vscode/
 .coverage
 *.pyc
+dist/
