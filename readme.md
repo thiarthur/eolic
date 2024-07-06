@@ -6,7 +6,7 @@ The main purpose be an effective way to trigger hooks based on events and allow 
 
 ## Documentation
 
-Read more about the usage with our [Documentation](https://linktodocumentation) / [Examples](https://linktodocumentation)
+Read more about the usage with our [Documentation](./docs) / [Examples](./examples)
 
 ## Installation
 
