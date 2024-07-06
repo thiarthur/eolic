@@ -1,0 +1,6 @@
+*.lock
+htmlcov/
+.mypy_cache
+.vscode/
+.coverage
+*.pyc

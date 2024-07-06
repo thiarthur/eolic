@@ -1,0 +1,15 @@
+- id: validate_manifest
+  name: Validate Pre-Commit Manifest
+  description: This validator validates a pre-commit hooks manifest file
+  entry: pre-commit-validate-manifest
+  language: python
+  files: ^(\.pre-commit-hooks\.yaml|hooks\.yaml)$
+- id: pytest
+  name: pytest
+  entry: pytest ./tests
+  language: python
+  types: [python]
+  pass_filenames: false
+  always_run: true
+  description: Run pytest on the ./tests directory
+  stages: [commit]
