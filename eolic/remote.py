@@ -1,5 +1,5 @@
 """
-Module for handling remote event targets and dispatchers in Eventipy.
+Module for handling remote event targets and dispatchers in Eolic.
 
 This module includes classes for managing remote event targets, dispatching events
 to remote targets, and handling different types of event remote targets.

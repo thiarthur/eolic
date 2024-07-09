@@ -1,4 +1,4 @@
-"""Module for handling event listeners in Eventipy."""
+"""Module for handling event listeners in Eolic."""
 
 from typing import Any, Callable, Dict, List
 

@@ -6,7 +6,7 @@ and executing listeners with and without arguments.
 """
 
 import pytest
-from eventipy.listener import EventListenerHandler
+from eolic.listener import EventListenerHandler
 from tests.common import GameEvents
 
 

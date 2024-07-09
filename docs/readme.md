@@ -1,6 +1,6 @@
-# Eventipy Documentation
+# Eolic Documentation
 
-Welcome to the Eventipy documentation!
+Welcome to the Eolic documentation!
 
 ## Table of Contents
 

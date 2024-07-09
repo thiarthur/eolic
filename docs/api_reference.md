@@ -1,11 +1,10 @@
-
 # API Reference
 
-## Eventipy
+## Eolic
 
 ### `__init__(self, remote_targets: List[Any]) -> None`
 
-Initialize Eventipy with an optional list of remote targets.
+Initialize Eolic with an optional list of remote targets.
 
 ### `register_target(self, target: Any) -> None`
 

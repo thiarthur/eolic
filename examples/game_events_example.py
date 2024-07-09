@@ -1,7 +1,7 @@
-"""Module that contains example of usage of Eventipy class - Game Events."""
+"""Module that contains example of usage of Eolic class - Game Events."""
 
 from enum import Enum
-from eventipy import Eventipy
+from eolic import Eolic
 
 
 # Defining all events on a enum (not required but it's a good pratice)
@@ -16,7 +16,7 @@ class GameEvents(Enum):
 
 # Instancing Eventypy class defining a webhook as remote_target
 # for "ON_MONSTER_DEFEATED" event
-handler = Eventipy(
+handler = Eolic(
     remote_targets=[
         {
             "type": "url",

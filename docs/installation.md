@@ -1,10 +1,9 @@
-
 # Installation
 
-To install Eventipy, clone this repository and run:
+To install Eolic, clone this repository and run, make sure to have [poetry](https://python-poetry.org/docs/#installation) installed:
 
 ```bash
-pip install .
+poetry install
 ```
 
 You can also install the required dependencies using:

@@ -7,8 +7,8 @@ handling errors, and validating event remote targets.
 
 from pydantic import ValidationError
 import pytest
-from eventipy.model import EventRemoteTarget
-from eventipy.remote import (
+from eolic.model import EventRemoteTarget
+from eolic.remote import (
     EventRemoteDispatcherFactory,
     EventRemoteURLDispatcher,
     EventRemoteURLTarget,

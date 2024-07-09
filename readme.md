@@ -1,6 +1,6 @@
-# Eventipy
+# Eolic
 
-Eventipy is an event-driven library for Python that supports event emission, remote target handling, and listener registration with a simple and intuitive API.
+Eolic is an event-driven library for Python that supports event emission, remote target handling, and listener registration with a simple and intuitive API.
 
 The main purpose be an effective way to trigger hooks based on events and allow communication to another systems based on most common protocols.
 
@@ -10,17 +10,17 @@ Read more about the usage with our [Documentation](./docs) / [Examples](./exampl
 
 ## Installation
 
-To install Eventipy, clone this repository and run:
+To install Eolic, clone this repository and run:
 
 ```bash
-pip install eventipy
+pip install eolic
 ```
 
 ## Usage/Examples
 
 ```python
 from enum import Enum
-from eventipy import Eventipy
+from eolic import Eolic
 
 # Defining all events on a enum (not required but it's a good pratice)
 class GameEvents(Enum):
@@ -30,7 +30,7 @@ class GameEvents(Enum):
     ON_GAME_OVER = "ON_GAME_OVER"
 
 # Instancing Eventypy class defining a webhook as remote_target for "ON_MONSTER_DEFEATED" event
-handler = Eventipy(remote_targets=[
+handler = Eolic(remote_targets=[
     {
         "type": "url",
         "address": "https://mysite.site/api/game/hooks",

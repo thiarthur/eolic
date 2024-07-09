@@ -1,14 +1,13 @@
-
 # Usage
 
-## Initializing Eventipy
+## Initializing Eolic
 
-To start using Eventipy, create an instance of `Eventipy` with an optional list of remote targets.
+To start using Eolic, create an instance of `Eolic` with an optional list of remote targets.
 
 ```python
-from eventipy import Eventipy
+from eolic import Eolic
 
-driver = Eventipy(
+driver = Eolic(
     remote_targets=[
         {"type": "url", "address": "https://webhook.site/test-url", "headers": {"X-Api-Key":"test"}, "events": ["ON_CONNECT"]}
     ]
@@ -44,10 +43,10 @@ driver.emit("ON_REGISTER", "user_id", "user_email", "user_password")
 
 ## Remote Targets
 
-Eventipy supports sending events to remote targets like webhooks. Define remote targets when initializing Eventipy.
+Eolic supports sending events to remote targets like webhooks. Define remote targets when initializing Eolic.
 
 ```python
-driver = Eventipy(
+driver = Eolic(
     remote_targets=[
         {"type": "url", "address": "https://webhook.site/test-url", "headers": {"X-Api-Key":"test"}, "events": ["ON_CONNECT"]}
     ]
@@ -56,7 +55,7 @@ driver = Eventipy(
 
 ## Example: RPG Game
 
-Here's an example of how to use Eventipy in an RPG game context.
+Here's an example of how to use Eolic in an RPG game context.
 
 ### Define Your Events
 
@@ -70,12 +69,12 @@ class GameEvents(Enum):
     ON_GAME_OVER = "ON_GAME_OVER"
 ```
 
-### Initialize Eventipy
+### Initialize Eolic
 
 ```python
-from eventipy import Eventipy
+from eolic import Eolic
 
-game_event_handler = Eventipy(remote_targets=[
+game_event_handler = Eolic(remote_targets=[
     {"type": "url", "address": "https://webhook.site/test-url", "headers": {"X-Api-Key":"test"}, "events": [GameEvents.ON_MONSTER_DEFEATED]}
 ])
 ```

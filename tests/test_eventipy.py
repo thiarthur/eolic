@@ -1,7 +1,7 @@
 """
-Module for testing the Eventipy base class functionality.
+Module for testing the Eolic base class functionality.
 
-This module includes tests for initializing Eventipy, registering targets and listeners,
+This module includes tests for initializing Eolic, registering targets and listeners,
 emitting events, and handling remote targets.
 """
 
@@ -10,21 +10,21 @@ from pydantic import ValidationError
 from pytest_mock import MockFixture
 import pytest
 import requests
-from eventipy import Eventipy
+from eolic import Eolic
 
-from eventipy.listener import EventListenerHandler
-from eventipy.remote import EventRemoteTargetHandler
+from eolic.listener import EventListenerHandler
+from eolic.remote import EventRemoteTargetHandler
 
 
 @pytest.fixture
-def eventipy_instance() -> Eventipy:
+def eolic_instance() -> Eolic:
     """
-    Fixture to provide an instance of Eventipy with a predefined remote target.
+    Fixture to provide an instance of Eolic with a predefined remote target.
 
     Returns:
-        Eventipy: An instance of Eventipy.
+        Eolic: An instance of Eolic.
     """
-    return Eventipy(
+    return Eolic(
         remote_targets=[
             {
                 "type": "url",
@@ -38,25 +38,25 @@ def eventipy_instance() -> Eventipy:
 
 # Initialization
 @pytest.mark.order(1)
-def test_initialization(eventipy_instance: Eventipy) -> None:
+def test_initialization(eolic_instance: Eolic) -> None:
     """
-    Test initialization of Eventipy.
+    Test initialization of Eolic.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
-    assert isinstance(eventipy_instance.remote_target_handler, EventRemoteTargetHandler)
-    assert isinstance(eventipy_instance.listener_handler, EventListenerHandler)
+    assert isinstance(eolic_instance.remote_target_handler, EventRemoteTargetHandler)
+    assert isinstance(eolic_instance.listener_handler, EventListenerHandler)
 
 
 # Registering Targets
 @pytest.mark.order(2)
-def test_register_single_target(eventipy_instance: Eventipy) -> None:
+def test_register_single_target(eolic_instance: Eolic) -> None:
     """
     Test registering a single remote target.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     target = {
         "type": "url",
@@ -64,17 +64,17 @@ def test_register_single_target(eventipy_instance: Eventipy) -> None:
         "headers": {"X-Api-Key": "another"},
         "events": [GameEvents.ON_MONSTER_DEFEATED],
     }
-    eventipy_instance.register_target(target)
-    assert len(eventipy_instance.remote_target_handler.targets) == 2
+    eolic_instance.register_target(target)
+    assert len(eolic_instance.remote_target_handler.targets) == 2
 
 
 @pytest.mark.order(3)
-def test_register_multiple_targets(eventipy_instance: Eventipy) -> None:
+def test_register_multiple_targets(eolic_instance: Eolic) -> None:
     """
     Test registering multiple remote targets.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     targets = [
         {
@@ -89,50 +89,48 @@ def test_register_multiple_targets(eventipy_instance: Eventipy) -> None:
         },
     ]
     for target in targets:
-        eventipy_instance.register_target(target)
+        eolic_instance.register_target(target)
 
-    assert len(eventipy_instance.remote_target_handler.targets) == 4
+    assert len(eolic_instance.remote_target_handler.targets) == 4
 
 
 @pytest.mark.order(4)
-def test_register_invalid_target(eventipy_instance: Eventipy) -> None:
+def test_register_invalid_target(eolic_instance: Eolic) -> None:
     """
     Test handling of invalid remote target registration.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     with pytest.raises(TypeError):
-        eventipy_instance.register_target(123)  # Invalid type
+        eolic_instance.register_target(123)  # Invalid type
 
 
 # Registering Listeners
 @pytest.mark.order(5)
-def test_register_single_listener(eventipy_instance: Eventipy) -> None:
+def test_register_single_listener(eolic_instance: Eolic) -> None:
     """
     Test registering a single event listener.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
 
     def dummy_listener(*args, **kwargs):
         pass
 
-    eventipy_instance.register_listener(GameEvents.ON_PLAYER_JOIN, dummy_listener)
-    listeners = eventipy_instance.listener_handler._listener_map[
-        GameEvents.ON_PLAYER_JOIN
-    ]
+    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, dummy_listener)
+    listeners = eolic_instance.listener_handler._listener_map[GameEvents.ON_PLAYER_JOIN]
     assert dummy_listener in listeners
 
 
 @pytest.mark.order(6)
-def test_register_multiple_listeners(eventipy_instance: Eventipy) -> None:
+def test_register_multiple_listeners(eolic_instance: Eolic) -> None:
     """
     Test registering multiple event listeners for the same event.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
 
     def listener1(*args, **kwargs):
@@ -141,117 +139,115 @@ def test_register_multiple_listeners(eventipy_instance: Eventipy) -> None:
     def listener2(*args, **kwargs):
         pass
 
-    eventipy_instance.register_listener(GameEvents.ON_PLAYER_JOIN, listener1)
-    eventipy_instance.register_listener(GameEvents.ON_PLAYER_JOIN, listener2)
-    listeners = eventipy_instance.listener_handler._listener_map[
-        GameEvents.ON_PLAYER_JOIN
-    ]
+    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, listener1)
+    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, listener2)
+    listeners = eolic_instance.listener_handler._listener_map[GameEvents.ON_PLAYER_JOIN]
     assert listener1 in listeners and listener2 in listeners
 
 
 @pytest.mark.order(7)
-def test_register_invalid_listener(eventipy_instance: Eventipy) -> None:
+def test_register_invalid_listener(eolic_instance: Eolic) -> None:
     """
     Test handling of invalid event listener registration.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     with pytest.raises(ValidationError):
-        eventipy_instance.register_listener(
+        eolic_instance.register_listener(
             GameEvents.ON_PLAYER_JOIN, "not a function"
         )  # Invalid listener
 
 
 # Event Emission
 @pytest.mark.order(8)
-def test_emit_event_to_single_listener(eventipy_instance: Eventipy) -> None:
+def test_emit_event_to_single_listener(eolic_instance: Eolic) -> None:
     """
     Test emitting an event to a single listener.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     results = []
 
-    @eventipy_instance.on(GameEvents.ON_PLAYER_JOIN)
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
     def handle_player_join(player_name):
         results.append(player_name)
 
-    eventipy_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
+    eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
     assert "Archer" in results
 
 
 @pytest.mark.order(9)
-def test_emit_event_to_multiple_listeners(eventipy_instance: Eventipy) -> None:
+def test_emit_event_to_multiple_listeners(eolic_instance: Eolic) -> None:
     """
     Test emitting an event to multiple listeners.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     results1 = []
     results2 = []
 
-    @eventipy_instance.on(GameEvents.ON_PLAYER_JOIN)
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
     def listener1(player_name):
         results1.append(player_name)
 
-    @eventipy_instance.on(GameEvents.ON_PLAYER_JOIN)
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
     def listener2(player_name):
         results2.append(player_name)
 
-    eventipy_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
+    eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
     assert "Archer" in results1 and "Archer" in results2
 
 
 @pytest.mark.order(10)
-def test_emit_event_with_arguments(eventipy_instance: Eventipy) -> None:
+def test_emit_event_with_arguments(eolic_instance: Eolic) -> None:
     """
     Test emitting an event with arguments to a listener.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     results = []
 
-    @eventipy_instance.on(GameEvents.ON_PLAYER_ATTACK)
+    @eolic_instance.on(GameEvents.ON_PLAYER_ATTACK)
     def handle_player_attack(player_name, monster_name, damage):
         results.append((player_name, monster_name, damage))
 
-    eventipy_instance.emit(GameEvents.ON_PLAYER_ATTACK, "Archer", "Goblin", 30)
+    eolic_instance.emit(GameEvents.ON_PLAYER_ATTACK, "Archer", "Goblin", 30)
     assert ("Archer", "Goblin", 30) in results
 
 
 # Decorator Functionality
 @pytest.mark.order(11)
-def test_decorator_functionality(eventipy_instance: Eventipy) -> None:
+def test_decorator_functionality(eolic_instance: Eolic) -> None:
     """
     Test the functionality of the decorator for registering listeners.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
     results = []
 
-    @eventipy_instance.on(GameEvents.ON_PLAYER_JOIN)
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
     def handle_player_join(player_name):
         results.append(player_name)
 
-    eventipy_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
+    eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
     assert "Archer" in results
 
 
 @pytest.mark.order(12)
-def test_decorator_preserves_function_properties(eventipy_instance: Eventipy) -> None:
+def test_decorator_preserves_function_properties(eolic_instance: Eolic) -> None:
     """
     Test that the decorator preserves the original function properties.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
     """
 
-    @eventipy_instance.on(GameEvents.ON_PLAYER_JOIN)
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
     def handle_player_join(player_name):
         """Create dummy callback for testing."""
         return player_name
@@ -263,19 +259,19 @@ def test_decorator_preserves_function_properties(eventipy_instance: Eventipy) ->
 # Remote Target Handling
 @pytest.mark.order(13)
 def test_remote_target_receives_event(
-    eventipy_instance: Eventipy, mocker: MockFixture
+    eolic_instance: Eolic, mocker: MockFixture
 ) -> None:
     """
     Test that remote targets receive emitted events.
 
     Args:
-        eventipy_instance (Eventipy): An instance of Eventipy.
+        eolic_instance (Eolic): An instance of Eolic.
         mocker (MockFixture): The mock fixture for patching.
     """
     mocker.patch("requests.post")
-    eventipy_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
+    eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
 
-    eventipy_instance.remote_target_handler.wait_for_all()
+    eolic_instance.remote_target_handler.wait_for_all()
 
     requests.post.assert_any_call(
         "https://webhook.site/test-url",
@@ -288,7 +284,7 @@ def test_remote_target_receives_event(
         timeout=10,
     )
 
-    eventipy_instance.emit(GameEvents.ON_MONSTER_DEFEATED, "Archer")
+    eolic_instance.emit(GameEvents.ON_MONSTER_DEFEATED, "Archer")
     requests.post.assert_any_call(
         "https://webhook.site/test-url",
         json={

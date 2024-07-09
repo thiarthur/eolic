@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "eventipy"
+name = "eolic"
 version = "0.1.0"
 description = ""
 authors = ["Thiago Goslar <thiarthur1@gmail.com>"]
 readme = "readme.md"
-packages = [{ include = "eventipy" }]
+packages = [{ include = "eolic" }]
 license = "MIT"
-homepage = "https://github.com/thiarthur/eventipy"
-repository = "https://github.com/thiarthur/eventipy"
-documentation = "https://github.com/thiarthur/eventipy/tree/master/docs"
+homepage = "https://github.com/thiarthur/eolic"
+repository = "https://github.com/thiarthur/eolic"
+documentation = "https://github.com/thiarthur/eolic/tree/master/docs"
 
 [tool.poetry.dependencies]
 python = "^3.1"

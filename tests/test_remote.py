@@ -6,7 +6,7 @@ to remote targets using the EventRemoteTargetHandler class.
 """
 
 import pytest
-from eventipy.remote import EventRemoteTargetHandler, EventRemoteURLTarget
+from eolic.remote import EventRemoteTargetHandler, EventRemoteURLTarget
 from unittest.mock import patch
 from tests.common import GameEvents
 

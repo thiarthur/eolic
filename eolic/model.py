@@ -1,4 +1,4 @@
-"""Module for eventipy models."""
+"""Module for eolic models."""
 
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional

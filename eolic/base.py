@@ -1,4 +1,4 @@
-"""Module for eventipy base class."""
+"""Module for eolic base class."""
 
 import functools
 from typing import Any, Callable, List
@@ -8,9 +8,9 @@ from .meta.singleton import Singleton
 from .remote import EventRemoteTargetHandler
 
 
-class Eventipy(metaclass=Singleton):
+class Eolic(metaclass=Singleton):
     """
-    Main class for Eventipy, implementing the Singleton pattern.
+    Main class for Eolic, implementing the Singleton pattern.
 
     Handles the registration and emission of events to local listeners and remote targets.
 
@@ -24,7 +24,7 @@ class Eventipy(metaclass=Singleton):
 
     def __init__(self, remote_targets: List[Any]) -> None:
         """
-        Initialize Eventipy with a list of remote targets.
+        Initialize Eolic with a list of remote targets.
 
         Args:
             remote_targets (List[Any]): A list of remote targets to register.

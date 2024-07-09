@@ -1,31 +1,22 @@
-
 # Contributing
 
-We welcome contributions to Eventipy! Here are some guidelines to help you get started.
+We welcome contributions to Eolic! Here are some guidelines to help you get started.
 
 ## Setting Up Your Environment
 
 1. Fork the repository on GitHub.
 2. Clone your fork to your local machine:
     ```bash
-    git clone https://github.com/your-username/Eventipy.git
+    git clone https://github.com/your-username/eolic.git
     ```
 3. Navigate to the project directory:
     ```bash
-    cd Eventipy
+    cd eolic
     ```
 4. Install the required dependencies:
     ```bash
-    pip install -r requirements.txt
+    poetry install
     ```
-
-## Running Tests
-
-Before submitting a pull request, make sure all tests pass:
-
-```bash
-pytest
-```
 
 ## Coding Style
 
