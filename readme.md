@@ -22,14 +22,14 @@ pip install eolic
 from enum import Enum
 from eolic import Eolic
 
-# Defining all events on a enum (not required but it's a good pratice)
+# Defining all events on a enum (not required but it's a good practice)
 class GameEvents(Enum):
     ON_PLAYER_JOIN = "ON_PLAYER_JOIN"
     ON_PLAYER_ATTACK = "ON_PLAYER_ATTACK"
     ON_MONSTER_DEFEATED = "ON_MONSTER_DEFEATED"
     ON_GAME_OVER = "ON_GAME_OVER"
 
-# Instancing Eventypy class defining a webhook as remote_target for "ON_MONSTER_DEFEATED" event
+# Instancing Eolic class defining a webhook as remote_target for "ON_MONSTER_DEFEATED" event
 handler = Eolic(remote_targets=[
     {
         "type": "url",

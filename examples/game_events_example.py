@@ -4,7 +4,7 @@ from enum import Enum
 from eolic import Eolic
 
 
-# Defining all events on a enum (not required but it's a good pratice)
+# Defining all events on a enum (not required but it's a good practice)
 class GameEvents(Enum):
     """Enum for events that can be emitted in the game."""
 
@@ -14,7 +14,7 @@ class GameEvents(Enum):
     ON_GAME_OVER = "ON_GAME_OVER"
 
 
-# Instancing Eventypy class defining a webhook as remote_target
+# Instancing Eolic class defining a webhook as remote_target
 # for "ON_MONSTER_DEFEATED" event
 handler = Eolic(
     remote_targets=[
