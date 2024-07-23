@@ -3,6 +3,7 @@
 import functools
 from typing import Any, Callable, List
 
+
 from .listener import EventListenerHandler
 from .meta.singleton import Singleton
 from .remote import EventRemoteTargetHandler
@@ -22,7 +23,7 @@ class Eolic(metaclass=Singleton):
     remote_target_handler: EventRemoteTargetHandler = EventRemoteTargetHandler()
     listener_handler: EventListenerHandler = EventListenerHandler()
 
-    def __init__(self, remote_targets: List[Any]) -> None:
+    def __init__(self, remote_targets: List[Any] = []) -> None:
         """
         Initialize Eolic with a list of remote targets.
 
@@ -89,9 +90,5 @@ class Eolic(metaclass=Singleton):
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
         """
-        listeners = self.listener_handler._listener_map.get(event, [])
-
-        for listener in listeners:
-            listener(*args, **kwargs)
-
+        self.listener_handler.emit(event, *args, **kwargs)
         self.remote_target_handler.emit(event, *args, **kwargs)
