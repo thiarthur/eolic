@@ -1,9 +1,23 @@
 """Module for eolic models."""
 
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Mapping, Tuple, Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel
+
+
+class EventDTO(BaseModel):
+    """
+    Model for event data transfer objects.
+
+    Attributes:
+        event: The event to be emitted.
+        data: The data to be sent with the event.
+    """
+
+    event: Any
+    args: Tuple = ()
+    kwargs: Mapping = {}
 
 
 class EventRemoteTargetType(str, Enum):

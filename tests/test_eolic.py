@@ -278,7 +278,7 @@ def test_remote_target_receives_event(
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
-            "data": {},
+            "kwargs": {},
         },
         headers={"X-Api-Key": "test"},
         timeout=10,
@@ -290,7 +290,7 @@ def test_remote_target_receives_event(
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
-            "data": {},
+            "kwargs": {},
         },
         headers={"X-Api-Key": "test"},
         timeout=10,

@@ -3,6 +3,7 @@
 import functools
 from typing import Any, Callable, List
 
+from eolic.integrations.base import Integration
 
 from .listener import EventListenerHandler
 from .meta.singleton import Singleton
@@ -30,10 +31,8 @@ class Eolic(metaclass=Singleton):
         Args:
             remote_targets (List[Any]): A list of remote targets to register.
         """
-        for target in remote_targets:
-            # TODO: Validate target for celery or url dict / str
-            # TODO: If dict validate type and address keys
-            self.register_target(target)
+        for remote_target in remote_targets:
+            self.register_target(remote_target)
 
     def register_target(self, target: Any) -> None:
         """
@@ -92,3 +91,12 @@ class Eolic(metaclass=Singleton):
         """
         self.listener_handler.emit(event, *args, **kwargs)
         self.remote_target_handler.emit(event, *args, **kwargs)
+
+    def setup_integration(self, integration: Integration) -> None:
+        """
+        Apply an integration to eolic instance.
+
+        Args:
+            integration (Integration): The integration to setup.
+        """
+        integration.setup(self)

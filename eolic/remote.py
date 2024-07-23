@@ -7,6 +7,7 @@ to remote targets, and handling different types of event remote targets.
 
 from __future__ import annotations
 
+from enum import Enum
 import logging
 from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -14,7 +15,12 @@ from typing import Any, Dict, List
 
 import requests
 
-from .model import EventRemoteTarget, EventRemoteTargetType, EventRemoteURLTarget
+from .model import (
+    EventDTO,
+    EventRemoteTarget,
+    EventRemoteTargetType,
+    EventRemoteURLTarget,
+)
 
 
 class EventRemoteTargetHandler:
@@ -151,9 +157,9 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
         """
         self.target = target
 
-    def _build_response(self, event: Any, *args, **kwargs) -> Dict[str, Any]:
+    def _build_request(self, event: Any, *args, **kwargs) -> Dict[str, Any]:
         """
-        Build the response payload for the event.
+        Build the request payload for the event.
 
         Args:
             event (Any): The event to dispatch.
@@ -165,10 +171,11 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
         """
         event_value = str(event)
 
-        if hasattr(event, "value"):
-            event_value = getattr(event, "value")
+        if isinstance(event, Enum):
+            event_value = event.value
 
-        return {"event": event_value, "args": args, "data": kwargs}
+        dto = EventDTO(event=event_value, args=args, kwargs=kwargs)
+        return dto.model_dump()
 
     def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
@@ -181,7 +188,7 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
         """
         response = requests.post(
             self.target.address,
-            json=self._build_response(event, *args, **kwargs),
+            json=self._build_request(event, *args, **kwargs),
             headers=self.target.headers,
             timeout=10,
         )
