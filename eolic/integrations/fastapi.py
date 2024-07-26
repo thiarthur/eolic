@@ -1,5 +1,6 @@
 """Module for FastAPI integration."""
 
+import sys
 from typing import TYPE_CHECKING, Optional
 from ..base import Integration
 from ..model import EventDTO
@@ -13,25 +14,28 @@ class FastAPIIntegration(Integration):
     """Class for FastAPI integration setup with Eolic."""
 
     def __init__(
-        self, eolic: "Eolic", app: Optional["FastAPI"], event_route: str = "/events"
+        self, app: Optional["FastAPI"], event_route: str = "/events"
     ) -> None:
         """
         Initialize the FastAPI integration.
 
         Args:
-            eolic (Eolic): The Eolic instance.
             app (FastAPI): The FastAPI app instance.
             event_route (str): The event hook route for event receiving.
 
         Raises:
-            Exception: If FastAPI is not installed.
+            Exception: If FastAPI extra is is not installed.
+            Exception: If FastAPI is None.
         """
-        if app is None:
+        if 'fastapi' not in sys.modules:
             raise Exception(
-                """FastAPI Integration is not installed.
-                Please install eolic[fastapi] (using fastapi extras) to use this integration."""
-            )
-
+                    """FastAPI Integration is not installed.
+                    Please install eolic[fastapi] (using fastapi extras) to use this integration."""
+                )
+    
+        if app is None:
+            raise Exception("Please declare you app to setup the integration.")
+        
         super().__init__()
         self.app = app
         self.event_route = event_route

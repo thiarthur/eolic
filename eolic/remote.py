@@ -141,8 +141,11 @@ class EventRemoteDispatcher(ABC):
             event (Any): The event to dispatch.
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
+        
+        Raises:
+            NotImplementedError: If the abstract method is not implemented.
         """
-        pass
+        raise NotImplementedError("Dispatch should be implemented.")
 
 
 class EventRemoteURLDispatcher(EventRemoteDispatcher):

@@ -23,8 +23,6 @@ class Integration(ABC):
         Args:
             eolic (Eolic): The Eolic instance to integrate with.
 
-        Raises:
-            NotImplementedError: If the setup method is not implemented.
         """
         raise NotImplementedError("Setup method must be implemented")
 
@@ -41,4 +39,4 @@ class Integration(ABC):
                 Use eolic.add_integration(integration)"""
             )
 
-        self.eolic.emit(event.event, *event.args, **event.kwargs)
+        self.eolic.listener_handler.emit(event.event, *event.args, **event.kwargs)
