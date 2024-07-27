@@ -19,16 +19,10 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install dependencies with poetry
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Install pre-commit
-        run: pip install pre-commit
-
-      - name: Install pytest
-        run: pip install pytest
+          pip install poetry
+          poetry install --with dev,test
 
       - name: Setup pre-commit
         uses: actions/cache@v4
