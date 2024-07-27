@@ -140,7 +140,7 @@ pip install eolic[fastapi]
 
 #### Initialization
 
-Here's how you can initialize a FastAPI app and the Eolic FastAPI integration::
+Here's how you can initialize a FastAPI app and the Eolic FastAPI integration:
 
 ```python
 from fastapi import FastAPI
