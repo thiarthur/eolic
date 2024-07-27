@@ -114,3 +114,54 @@ game_event_handler.emit(GameEvents.ON_MONSTER_DEFEATED, "Archer", "Goblin")
 # Emitting game over event
 game_event_handler.emit(GameEvents.ON_GAME_OVER)
 ```
+
+
+## Integrations
+
+### How it works 
+
+Our integration system is responsible for triggering our handler functions from other apps in your ecosystem (most useful for microservices architecture).
+
+![Integration Flow](images/integration_flow.jpg "Flow")
+
+For now, we only support FastAPI Integration. However, you can write any integration using the [Integration](../eolic/integrations/base.py) abstract class.
+
+*It's on our roadmap to create more integrations.*
+
+### FastAPI
+
+#### Installation
+
+To use the FastAPI integration, you need to install the necessary dependencies. You can install them using pip:
+
+```bash
+pip install eolic[fastapi]
+```
+
+#### Initialization
+
+Here's how you can initialize a FastAPI app and the Eolic FastAPI integration::
+
+```python
+from fastapi import FastAPI
+from eolic import Eolic
+from eolic.integrations.fastapi_integration import FastAPIIntegration
+
+# Create an instance of FastAPI
+app = FastAPI()
+
+# Create an instance of Eolic
+eolic = Eolic()
+```
+
+## Setup 
+Calling the setup method adds a route with the default path ```/event```.
+
+```python
+# Create an instance of FastAPIIntegration
+fastapi_integration = FastAPIIntegration(eolic, app, event_route="/my-custom-event-route")
+
+# Set up the integration
+eolic.setup_integration(fastapi_integration)
+```
+
