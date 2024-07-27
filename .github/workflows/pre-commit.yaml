@@ -23,6 +23,7 @@ jobs:
         run: |
           pip install poetry
           poetry install --with dev,test
+          poetry shell
 
       - name: Setup pre-commit
         uses: actions/cache@v4
