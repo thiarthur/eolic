@@ -27,6 +27,9 @@ jobs:
       - name: Install pre-commit
         run: pip install pre-commit
 
+      - name: Install pytest
+        run: pip install pytest
+
       - name: Setup pre-commit
         uses: actions/cache@v4
         with:
