@@ -118,7 +118,7 @@ game_event_handler.emit(GameEvents.ON_GAME_OVER)
 
 ## Integrations
 
-### How it works 
+### How it works
 
 Our integration system is responsible for triggering our handler functions from other apps in your ecosystem (most useful for microservices architecture).
 
@@ -154,7 +154,7 @@ app = FastAPI()
 eolic = Eolic()
 ```
 
-## Setup 
+## Setup
 Calling the setup method adds a route with the default path ```/event```.
 
 ```python
@@ -163,5 +163,14 @@ fastapi_integration = FastAPIIntegration(eolic, app, event_route="/my-custom-eve
 
 # Set up the integration
 eolic.setup_integration(fastapi_integration)
+
+@eolic.on("my-event"):
+def my_event_handler(*args, **kwargs):
+    print("My e]vent received with")
+    print("ARGS:")
+    print(args)
+    print("KWARGS:")
+    print(kwargs)
 ```
 
+It's done! Now, any event with the name ```my-event``` emitted from another app with an Eolic instance that contains a ```url``` remote target as **type** and ```http://host/my-custom-event-route``` as **address** will trigger the ```my_event_handler``` handler.
