@@ -23,13 +23,8 @@ jobs:
         run: |
           pip install poetry
           poetry install --with dev,test
-          source $(poetry env info --path)/bin/activate
-
-      - name: Setup pre-commit
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Run pre-commit
-        run: pre-commit run --all-files --show-diff-on-failure --color=always
+        run: |
+          source $(poetry env info --path)/bin/activate
+          pre-commit run --all-files --show-diff-on-failure --color=always
