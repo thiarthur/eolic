@@ -83,7 +83,7 @@ def test_dispatch_event_to_url(
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
-            "data": {},
+            "kwargs": {},
         },
         headers={"X-Api-Key": "test"},
         timeout=10,
@@ -108,7 +108,7 @@ def test_dispatch_event_to_url_with_different_event(
         json={
             "event": GameEvents.ON_PLAYER_ATTACK.value,
             "args": ("Archer", "Goblin", 30),
-            "data": {},
+            "kwargs": {},
         },
         headers={"X-Api-Key": "test"},
         timeout=10,
@@ -134,7 +134,7 @@ def test_dispatcher_error_handling(
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
-            "data": {},
+            "kwargs": {},
         },
         headers={"X-Api-Key": "test"},
         timeout=10,

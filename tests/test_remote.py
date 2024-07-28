@@ -160,7 +160,7 @@ def test_emit_event_to_single_target(target_handler: EventRemoteTargetHandler) -
             json={
                 "event": GameEvents.ON_PLAYER_JOIN.value,
                 "args": ("Archer",),
-                "data": {},
+                "kwargs": {},
             },
             headers={"X-Api-Key": "test"},
             timeout=10,
@@ -229,7 +229,7 @@ def test_filter_targets_by_event(target_handler: EventRemoteTargetHandler) -> No
             json={
                 "event": GameEvents.ON_PLAYER_JOIN.value,
                 "args": ("Archer",),
-                "data": {},
+                "kwargs": {},
             },
             headers={"X-Api-Key": "key1"},
             timeout=10,

@@ -1,6 +1,7 @@
 """Module for handling event listeners in Eolic."""
 
-from typing import Any, Callable, Dict, List
+from ast import Tuple
+from typing import Any, Callable, Dict, List, Mapping
 
 from .model import EventListener
 
@@ -30,6 +31,20 @@ class EventListenerHandler:
             self._listener_map[event] = [fn]
         else:
             self._listener_map[event].append(fn)
+
+    def emit(self, event: Any, *args: Tuple, **kwargs: Mapping[str, Any]) -> None:
+        """
+        Emit an event to all registered event handlers.
+
+        Args:
+            event (Any): The event to emit.
+            *args: Variable length argument list for the event.
+            **kwargs: Arbitrary keyword arguments for the event.
+        """
+        listeners = self._listener_map.get(event, [])
+
+        for listener in listeners:
+            listener(*args, **kwargs)
 
     def clear(self) -> None:
         """
