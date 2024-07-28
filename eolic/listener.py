@@ -31,7 +31,7 @@ class EventListenerHandler:
             self._listener_map[event] = [fn]
         else:
             self._listener_map[event].append(fn)
-    
+
     def emit(self, event: Any, *args: Tuple, **kwargs: Mapping[str, Any]) -> None:
         """
         Emit an event to all registered event handlers.
@@ -44,7 +44,7 @@ class EventListenerHandler:
         listeners = self._listener_map.get(event, [])
 
         for listener in listeners:
-            listener(*args, **kwargs)        
+            listener(*args, **kwargs)
 
     def clear(self) -> None:
         """

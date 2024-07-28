@@ -13,9 +13,7 @@ if TYPE_CHECKING:
 class FastAPIIntegration(Integration):
     """Class for FastAPI integration setup with Eolic."""
 
-    def __init__(
-        self, app: Optional["FastAPI"], event_route: str = "/events"
-    ) -> None:
+    def __init__(self, app: Optional["FastAPI"], event_route: str = "/events") -> None:
         """
         Initialize the FastAPI integration.
 
@@ -27,15 +25,15 @@ class FastAPIIntegration(Integration):
             Exception: If FastAPI extra is is not installed.
             Exception: If FastAPI is None.
         """
-        if 'fastapi' not in sys.modules:
+        if "fastapi" not in sys.modules:
             raise Exception(
-                    """FastAPI Integration is not installed.
+                """FastAPI Integration is not installed.
                     Please install eolic[fastapi] (using fastapi extras) to use this integration."""
-                )
-    
+            )
+
         if app is None:
             raise Exception("Please declare you app to setup the integration.")
-        
+
         super().__init__()
         self.app = app
         self.event_route = event_route
