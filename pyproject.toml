@@ -14,6 +14,12 @@ documentation = "https://github.com/thiarthur/eolic/tree/master/docs"
 python = "^3.9,<4.0"
 pydantic = "^2.8.2"
 requests = "^2.32.3"
+fastapi = { version="*", optional= true }
+uvicorn = { version="*", optional= true }
+
+[tool.poetry.extras]
+fastapi = ["fastapi", "uvicorn"]
+all = ["fastapi", "uvicorn"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
