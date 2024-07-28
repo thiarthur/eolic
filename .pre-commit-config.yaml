@@ -42,3 +42,10 @@ repos:
             types: [python]
             pass_filenames: false
             always_run: true
+    - repo: https://github.com/commitizen-tools/commitizen
+      hooks:
+        - id: commitizen
+        - id: commitizen-branch
+          stages:
+            - push
+      rev: v3.28.0
