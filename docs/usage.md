@@ -159,7 +159,7 @@ Calling the setup method adds a route with the default path ```/event```.
 
 ```python
 # Create an instance of FastAPIIntegration
-fastapi_integration = FastAPIIntegration(eolic, app, event_route="/my-custom-event-route")
+fastapi_integration = FastAPIIntegration(app, event_route="/my-custom-event-route")
 
 # Set up the integration
 eolic.setup_integration(fastapi_integration)
