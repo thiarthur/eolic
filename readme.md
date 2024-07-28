@@ -1,4 +1,5 @@
 # Eolic
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
 Eolic is an event-driven library for Python that supports event emission, remote target handling, and listener registration with a simple and intuitive API.
 
