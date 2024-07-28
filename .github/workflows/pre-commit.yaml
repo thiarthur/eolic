@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies with poetry
         run: |
           pip install poetry
-          poetry install --with dev,test
+          poetry install --with dev,test --all-extras
 
       - name: Run pre-commit
         run: |
