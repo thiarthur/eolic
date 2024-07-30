@@ -1,9 +1,10 @@
 """Module for FastAPI integration."""
 
-import sys
 from typing import TYPE_CHECKING, Optional
+
 from ..base import Integration
 from ..model import EventDTO
+from ..utils import is_module_installed
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -25,7 +26,7 @@ class FastAPIIntegration(Integration):
             Exception: If FastAPI extra is is not installed.
             Exception: If FastAPI is None.
         """
-        if "fastapi" not in sys.modules:
+        if not is_module_installed("fastapi"):
             raise Exception(
                 """FastAPI Integration is not installed.
                     Please install eolic[fastapi] (using fastapi extras) to use this integration."""
