@@ -61,6 +61,19 @@ class EventRemoteURLTarget(EventRemoteTarget):
     headers: Dict[str, Any] = {}
 
 
+class EventRemoteCeleryTarget(EventRemoteTarget):
+    """
+    Model for Celery event remote targets.
+
+    Attributes:
+        queue_name: String of queue used in celery worker, default: eolic.
+        function_name: String of function name used in celery worker, default: events.
+    """
+
+    queue_name: str = "eolic"
+    function_name: str = "events"
+
+
 class EventListener(BaseModel):
     """
     Model for event listeners.

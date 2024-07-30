@@ -16,10 +16,12 @@ pydantic = "^2.8.2"
 requests = "^2.32.3"
 fastapi = { version="*", optional= true }
 uvicorn = { version="*", optional= true }
+celery = { version="*", optional= true }
 
 [tool.poetry.extras]
 fastapi = ["fastapi", "uvicorn"]
-all = ["fastapi", "uvicorn"]
+celery = ["celery"]
+all = ["fastapi", "uvicorn", "celery"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
