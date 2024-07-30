@@ -1,10 +1,10 @@
 """Module for Celery integration."""
 
-import sys
 from typing import TYPE_CHECKING, Optional
 
 from ..base import Integration
 from ..model import EventDTO
+from ..utils import is_module_installed
 
 if TYPE_CHECKING:
     from celery import Celery
@@ -31,10 +31,10 @@ class CeleryIntegration(Integration):
             Exception: If Celery extra is not installed.
             Exception: If Celery is None.
         """
-        if "celery" not in sys.modules:
+        if not is_module_installed("celery"):
             raise Exception(
-                """Celery Integration is not installed.
-                    Please install eolic[celery] (using celery extras) to use this integration."""
+                "Celery Integration is not installed. "
+                "Please install eolic[celery] (using celery extras) to use this integration."
             )
 
         if app is None:

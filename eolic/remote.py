@@ -11,7 +11,7 @@ import logging
 from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
-from typing import Any, Dict, List, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Union
 
 import requests
 
@@ -22,10 +22,7 @@ from .model import (
     EventRemoteURLTarget,
     EventRemoteCeleryTarget,
 )
-from .utils import is_module_installed
-
-if TYPE_CHECKING:
-    from celery import Celery
+from .utils import is_module_installed, get_celery
 
 
 class EventRemoteTargetHandler:
@@ -255,9 +252,11 @@ class EventRemoteCeleryDispatcher(EventRemoteDispatcher):
 
         if not is_module_installed("celery"):
             raise Exception(
-                """Celery Integration is not installed.
-                    Please install eolic[celery] (using celery extras) to use this integration."""
+                "Celery Integration is not installed. "
+                "Please install eolic[celery] (using celery extras) to use this integration."
             )
+
+        self.celery = get_celery(self.target.address)
 
     def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
@@ -273,7 +272,7 @@ class EventRemoteCeleryDispatcher(EventRemoteDispatcher):
         if isinstance(event, Enum):
             event_value = event.value
 
-        task = Celery(self.target.address).send_task(
+        task = self.celery.send_task(
             self.target.function_name,
             args=[event_value, *args],
             kwargs=kwargs,
