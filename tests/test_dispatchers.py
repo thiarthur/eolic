@@ -27,7 +27,7 @@ def url_target() -> EventRemoteURLTarget:
     """
     return EventRemoteURLTarget(
         type="url",
-        address="https://webhook.site/test-url",
+        address="https://a/test-url",
         headers={"X-Api-Key": "test"},
         timeout=10,
     )
@@ -81,7 +81,7 @@ async def test_dispatch_event_to_url(
     await dispatcher.dispatch(GameEvents.ON_PLAYER_JOIN, "Archer")
 
     mock_post.assert_called_once_with(
-        "https://webhook.site/test-url",
+        "https://a/test-url",
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
@@ -108,7 +108,7 @@ async def test_dispatch_event_to_url_with_different_event(
     await dispatcher.dispatch(GameEvents.ON_PLAYER_ATTACK, "Archer", "Goblin", 30)
 
     mock_post.assert_called_once_with(
-        "https://webhook.site/test-url",
+        "https://a/test-url",
         json={
             "event": GameEvents.ON_PLAYER_ATTACK.value,
             "args": ("Archer", "Goblin", 30),
@@ -136,7 +136,7 @@ async def test_dispatcher_error_handling(
         await dispatcher.dispatch(GameEvents.ON_PLAYER_JOIN, "Archer")
 
     mock_post.assert_called_once_with(
-        "https://webhook.site/test-url",
+        "https://a/test-url",
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
