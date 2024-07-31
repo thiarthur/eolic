@@ -30,6 +30,7 @@ pre-commit = "^3.7.1"
 pydocstyle = "^6.3.0"
 flake8-pyproject = "^1.2.3"
 commitizen = "^3.28.0"
+pytest-asyncio = "^0.23.8"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.2"
@@ -60,3 +61,6 @@ match = '((?!.run).)*\.py'
 
 [tool.bandit]
 exclude_dirs = ["tests/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

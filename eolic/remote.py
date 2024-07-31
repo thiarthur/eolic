@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from enum import Enum
 import logging
+import asyncio
 from abc import ABC, abstractmethod
-from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Dict, List
 
 import requests
@@ -34,13 +34,11 @@ class EventRemoteTargetHandler:
     """
 
     targets: List[EventRemoteTarget] = []
-    futures: List[Future] = []
-    executor: ThreadPoolExecutor
+    tasks: List[asyncio.Task] = []
 
     def __init__(self) -> None:
-        """Initialize the EventRemoteTargetHandler with a thread pool executor."""
-        self.executor = ThreadPoolExecutor(max_workers=10)
-        self.futures = []
+        """Initialize the EventRemoteTargetHandler."""
+        self.tasks = []
 
     def _parse_target(self, target: Any) -> EventRemoteTarget:
         """
@@ -79,7 +77,7 @@ class EventRemoteTargetHandler:
     def clear(self) -> None:
         """Clear all registered targets and futures."""
         self.targets.clear()
-        self.futures.clear()
+        self.tasks.clear()
 
     def emit(self, event: Any, *args, **kwargs) -> None:
         """
@@ -90,19 +88,44 @@ class EventRemoteTargetHandler:
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
         """
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.run_in_executor(None, self._emit_async, event, *args, **kwargs)
+        else:
+            loop.run_until_complete(self._emit_async(event, *args, **kwargs))
+
+    async def _emit_async(self, event: Any, *args, **kwargs) -> None:
+        """
+        Asynchronously emit an event to all registered remote targets.
+
+        Args:
+            event (Any): The event to emit.
+            *args: Variable length argument list for the event.
+            **kwargs: Arbitrary keyword arguments for the event.
+        """
+        tasks = []
         for target in self.targets:
             if target.events is None or event in target.events:
                 dispatcher = EventRemoteDispatcherFactory().create(target)
-                future = self.executor.submit(
-                    dispatcher.dispatch, event, *args, **kwargs
+                task: asyncio.Task = asyncio.create_task(
+                    dispatcher.dispatch(event, *args, **kwargs)
                 )
-                self.futures.append(future)
+                tasks.append(task)
+
+        await asyncio.gather(*tasks)
 
     def wait_for_all(self) -> None:
         """Wait for all asynchronous tasks to complete."""
-        for future in self.futures:
-            future.result()
-        self.futures.clear()
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.run_in_executor(None, self._wait_for_all_async)
+        else:
+            loop.run_until_complete(self._wait_for_all_async())
+
+    async def _wait_for_all_async(self) -> None:
+        """Asynchronously wait for all tasks to complete."""
+        await asyncio.gather(*self.tasks)
+        self.tasks.clear()
 
 
 class EventRemoteDispatcherFactory:
@@ -133,7 +156,7 @@ class EventRemoteDispatcher(ABC):
     """Abstract base class for event remote dispatchers."""
 
     @abstractmethod
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch an event to the remote target.
 
@@ -180,7 +203,7 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
         dto = EventDTO(event=event_value, args=args, kwargs=kwargs)
         return dto.model_dump()
 
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch the event to the URL remote target.
 
