@@ -1,4 +1,4 @@
-"""Notification service example module."""
+"""Notification service example with celery."""
 
 from celery import Celery
 

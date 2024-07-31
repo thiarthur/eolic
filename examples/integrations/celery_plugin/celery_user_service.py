@@ -1,4 +1,4 @@
-"""User service example module."""
+"""User service example with celery."""
 
 from typing import List
 
