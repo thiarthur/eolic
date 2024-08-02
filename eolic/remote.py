@@ -102,9 +102,10 @@ class EventRemoteTargetHandler:
             **kwargs: Arbitrary keyword arguments for the event.
         """
         tasks = []
+        dispatcher_factory = EventRemoteDispatcherFactory()
         for target in self.targets:
             if target.events is None or event in target.events:
-                dispatcher = EventRemoteDispatcherFactory().create(target)
+                dispatcher = dispatcher_factory.create(target)
                 task: asyncio.Task = asyncio.create_task(
                     dispatcher.dispatch(event, *args, **kwargs)
                 )
