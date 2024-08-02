@@ -111,7 +111,7 @@ class EventRemoteTargetHandler:
                 )
                 tasks.append(task)
 
-        await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks, return_exceptions=True)
 
     def wait_for_all(self) -> None:
         """Wait for all asynchronous tasks to complete."""
@@ -119,7 +119,7 @@ class EventRemoteTargetHandler:
 
     async def _wait_for_all_async(self) -> None:
         """Asynchronously wait for all tasks to complete."""
-        await asyncio.gather(*self.tasks)
+        await asyncio.gather(*self.tasks, return_exceptions=True)
         self.tasks.clear()
 
 
