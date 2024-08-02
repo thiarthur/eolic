@@ -15,6 +15,8 @@ from typing import Any, Dict, List
 
 import requests
 
+from .helpers.coroutines import run_coroutine
+
 from .model import (
     EventDTO,
     EventRemoteTarget,
@@ -88,11 +90,7 @@ class EventRemoteTargetHandler:
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
         """
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            loop.run_in_executor(None, self._emit_async, event, *args, **kwargs)
-        else:
-            loop.run_until_complete(self._emit_async(event, *args, **kwargs))
+        run_coroutine(self._emit_async, event, *args, **kwargs)
 
     async def _emit_async(self, event: Any, *args, **kwargs) -> None:
         """
@@ -116,11 +114,7 @@ class EventRemoteTargetHandler:
 
     def wait_for_all(self) -> None:
         """Wait for all asynchronous tasks to complete."""
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            loop.run_in_executor(None, self._wait_for_all_async)
-        else:
-            loop.run_until_complete(self._wait_for_all_async())
+        run_coroutine(self._wait_for_all_async)
 
     async def _wait_for_all_async(self) -> None:
         """Asynchronously wait for all tasks to complete."""

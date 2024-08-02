@@ -1,7 +1,11 @@
 """Module for handling event listeners in Eolic."""
 
 from ast import Tuple
+import asyncio
+import inspect
 from typing import Any, Callable, Dict, List, Mapping
+
+from .helpers.coroutines import run_coroutine
 
 from .model import EventListener
 
@@ -42,9 +46,32 @@ class EventListenerHandler:
             **kwargs: Arbitrary keyword arguments for the event.
         """
         listeners = self._listener_map.get(event, [])
+        run_coroutine(self._emit_async, listeners, *args, **kwargs)
 
+    async def _emit_async(
+        self, listeners: List[Callable[..., Any]], *args, **kwargs
+    ) -> None:
+        """
+        Asynchronously emit an event to all registered remote targets.
+
+        Args:
+            event (Any): The event to emit.
+            *args: Variable length argument list for the event.
+            **kwargs: Arbitrary keyword arguments for the event.
+        """
+        tasks: List[asyncio.Task] = []
+        sync_tasks = []
         for listener in listeners:
+            if inspect.iscoroutinefunction(listener):
+                task: asyncio.Task = asyncio.create_task(listener(*args, **kwargs))
+                tasks.append(task)
+            else:
+                sync_tasks.append(listener)
+
+        for listener in sync_tasks:
             listener(*args, **kwargs)
+
+        await asyncio.gather(*tasks)
 
     def clear(self) -> None:
         """
