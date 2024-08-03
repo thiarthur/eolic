@@ -1,10 +1,8 @@
 """File containing utility functions for various tasks."""
 
 import importlib.util
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from celery import Celery
+from typing import Any
 
 
 def is_module_installed(module_name: str) -> bool:
@@ -20,15 +18,13 @@ def is_module_installed(module_name: str) -> bool:
     return importlib.util.find_spec(module_name) is not None
 
 
-def get_celery(*args, **kwargs) -> "Celery":
+def get_module(module_name: str) -> Any:
     """
-    Return an instance of the 'Celery' class from 'celery' package.
+    Import and returns a module by its name.
 
     Args:
-        *args: Positional arguments to be passed to the `Celery` class constructor.
-        **kwargs: Keyword arguments to be passed to the `Celery` class constructor.
-
+        module_name (str): The name of the module to import, as a string.
     Returns:
-        Celery: An instance of the `Celery` class from the 'celery' package.
+        Any: The imported module.
     """
-    return importlib.import_module("celery").Celery(*args, **kwargs)
+    return importlib.import_module(module_name)

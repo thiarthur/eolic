@@ -22,7 +22,7 @@ from .model import (
     EventRemoteURLTarget,
     EventRemoteCeleryTarget,
 )
-from .utils import is_module_installed, get_celery
+from .utils import is_module_installed, get_module
 
 
 class EventRemoteTargetHandler:
@@ -256,7 +256,7 @@ class EventRemoteCeleryDispatcher(EventRemoteDispatcher):
                 "Please install eolic[celery] (using celery extras) to use this integration."
             )
 
-        self.celery = get_celery(self.target.address)
+        self.celery = get_module("celery").Celery(self.target.address)
 
     def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
