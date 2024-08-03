@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from enum import Enum
 import logging
-import asyncio
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
-
 import requests
+
+from eolic.task_manager import TaskManager
 
 from .helpers.coroutines import run_coroutine
 
@@ -25,7 +25,7 @@ from .model import (
 )
 
 
-class EventRemoteTargetHandler:
+class EventRemoteTargetHandler(TaskManager):
     """
     Handles registration and emission of events to remote targets.
 
@@ -36,11 +36,10 @@ class EventRemoteTargetHandler:
     """
 
     targets: List[EventRemoteTarget] = []
-    tasks: List[asyncio.Task] = []
 
     def __init__(self) -> None:
         """Initialize the EventRemoteTargetHandler."""
-        self.tasks = []
+        super().__init__()
 
     def _parse_target(self, target: Any) -> EventRemoteTarget:
         """
@@ -79,7 +78,6 @@ class EventRemoteTargetHandler:
     def clear(self) -> None:
         """Clear all registered targets and futures."""
         self.targets.clear()
-        self.tasks.clear()
 
     def emit(self, event: Any, *args, **kwargs) -> None:
         """
@@ -101,26 +99,13 @@ class EventRemoteTargetHandler:
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
         """
-        tasks = []
         dispatcher_factory = EventRemoteDispatcherFactory()
+
         for target in self.targets:
+            dispatcher = dispatcher_factory.create(target)
+
             if target.events is None or event in target.events:
-                dispatcher = dispatcher_factory.create(target)
-                task: asyncio.Task = asyncio.create_task(
-                    dispatcher.dispatch(event, *args, **kwargs)
-                )
-                tasks.append(task)
-
-        await asyncio.gather(*tasks, return_exceptions=True)
-
-    def wait_for_all(self) -> None:
-        """Wait for all asynchronous tasks to complete."""
-        run_coroutine(self._wait_for_all_async)
-
-    async def _wait_for_all_async(self) -> None:
-        """Asynchronously wait for all tasks to complete."""
-        await asyncio.gather(*self.tasks, return_exceptions=True)
-        self.tasks.clear()
+                self.create_task(dispatcher.dispatch, event, *args, **kwargs)
 
 
 class EventRemoteDispatcherFactory:
