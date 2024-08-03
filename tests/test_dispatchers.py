@@ -27,7 +27,7 @@ def url_target() -> EventRemoteURLTarget:
     """
     return EventRemoteURLTarget(
         type="url",
-        address="https://webhook.site/test-url",
+        address="https://a/test-url",
         headers={"X-Api-Key": "test"},
         timeout=10,
     )
@@ -65,7 +65,7 @@ def test_create_url_dispatcher(
 # Dispatching Events
 
 
-def test_dispatch_event_to_url(
+async def test_dispatch_event_to_url(
     mocker: MockFixture, url_target: EventRemoteURLTarget
 ) -> None:
     """
@@ -76,10 +76,12 @@ def test_dispatch_event_to_url(
         url_target (EventRemoteURLTarget): An instance of EventRemoteURLTarget.
     """
     dispatcher = EventRemoteURLDispatcher(url_target)
+
     mock_post = mocker.patch("requests.post")
-    dispatcher.dispatch(GameEvents.ON_PLAYER_JOIN, "Archer")
+    await dispatcher.dispatch(GameEvents.ON_PLAYER_JOIN, "Archer")
+
     mock_post.assert_called_once_with(
-        "https://webhook.site/test-url",
+        "https://a/test-url",
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),
@@ -90,7 +92,7 @@ def test_dispatch_event_to_url(
     )
 
 
-def test_dispatch_event_to_url_with_different_event(
+async def test_dispatch_event_to_url_with_different_event(
     mocker: MockFixture, url_target: EventRemoteURLTarget
 ) -> None:
     """
@@ -101,10 +103,12 @@ def test_dispatch_event_to_url_with_different_event(
         url_target (EventRemoteURLTarget): An instance of EventRemoteURLTarget.
     """
     dispatcher = EventRemoteURLDispatcher(url_target)
+
     mock_post = mocker.patch("requests.post")
-    dispatcher.dispatch(GameEvents.ON_PLAYER_ATTACK, "Archer", "Goblin", 30)
+    await dispatcher.dispatch(GameEvents.ON_PLAYER_ATTACK, "Archer", "Goblin", 30)
+
     mock_post.assert_called_once_with(
-        "https://webhook.site/test-url",
+        "https://a/test-url",
         json={
             "event": GameEvents.ON_PLAYER_ATTACK.value,
             "args": ("Archer", "Goblin", 30),
@@ -115,7 +119,7 @@ def test_dispatch_event_to_url_with_different_event(
     )
 
 
-def test_dispatcher_error_handling(
+async def test_dispatcher_error_handling(
     mocker: MockFixture, url_target: EventRemoteURLTarget
 ) -> None:
     """
@@ -126,11 +130,13 @@ def test_dispatcher_error_handling(
         url_target (EventRemoteURLTarget): An instance of EventRemoteURLTarget.
     """
     dispatcher = EventRemoteURLDispatcher(url_target)
+
     mock_post = mocker.patch("requests.post", side_effect=Exception("Request failed"))
     with pytest.raises(Exception, match="Request failed"):
-        dispatcher.dispatch(GameEvents.ON_PLAYER_JOIN, "Archer")
+        await dispatcher.dispatch(GameEvents.ON_PLAYER_JOIN, "Archer")
+
     mock_post.assert_called_once_with(
-        "https://webhook.site/test-url",
+        "https://a/test-url",
         json={
             "event": GameEvents.ON_PLAYER_JOIN.value,
             "args": ("Archer",),

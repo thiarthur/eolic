@@ -10,10 +10,12 @@ from __future__ import annotations
 from enum import Enum
 import logging
 from abc import ABC, abstractmethod
-from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Dict, List
-
 import requests
+
+from eolic.task_manager import TaskManager
+
+from .helpers.coroutines import run_coroutine
 
 from .model import (
     EventDTO,
@@ -23,7 +25,7 @@ from .model import (
 )
 
 
-class EventRemoteTargetHandler:
+class EventRemoteTargetHandler(TaskManager):
     """
     Handles registration and emission of events to remote targets.
 
@@ -34,13 +36,10 @@ class EventRemoteTargetHandler:
     """
 
     targets: List[EventRemoteTarget] = []
-    futures: List[Future] = []
-    executor: ThreadPoolExecutor
 
     def __init__(self) -> None:
-        """Initialize the EventRemoteTargetHandler with a thread pool executor."""
-        self.executor = ThreadPoolExecutor(max_workers=10)
-        self.futures = []
+        """Initialize the EventRemoteTargetHandler."""
+        super().__init__()
 
     def _parse_target(self, target: Any) -> EventRemoteTarget:
         """
@@ -79,7 +78,6 @@ class EventRemoteTargetHandler:
     def clear(self) -> None:
         """Clear all registered targets and futures."""
         self.targets.clear()
-        self.futures.clear()
 
     def emit(self, event: Any, *args, **kwargs) -> None:
         """
@@ -90,19 +88,24 @@ class EventRemoteTargetHandler:
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
         """
-        for target in self.targets:
-            if target.events is None or event in target.events:
-                dispatcher = EventRemoteDispatcherFactory().create(target)
-                future = self.executor.submit(
-                    dispatcher.dispatch, event, *args, **kwargs
-                )
-                self.futures.append(future)
+        run_coroutine(self._emit_async, event, *args, **kwargs)
 
-    def wait_for_all(self) -> None:
-        """Wait for all asynchronous tasks to complete."""
-        for future in self.futures:
-            future.result()
-        self.futures.clear()
+    async def _emit_async(self, event: Any, *args, **kwargs) -> None:
+        """
+        Asynchronously emit an event to all registered remote targets.
+
+        Args:
+            event (Any): The event to emit.
+            *args: Variable length argument list for the event.
+            **kwargs: Arbitrary keyword arguments for the event.
+        """
+        dispatcher_factory = EventRemoteDispatcherFactory()
+
+        for target in self.targets:
+            dispatcher = dispatcher_factory.create(target)
+
+            if target.events is None or event in target.events:
+                self.create_task(dispatcher.dispatch, event, *args, **kwargs)
 
 
 class EventRemoteDispatcherFactory:
@@ -133,7 +136,7 @@ class EventRemoteDispatcher(ABC):
     """Abstract base class for event remote dispatchers."""
 
     @abstractmethod
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch an event to the remote target.
 
@@ -180,7 +183,7 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
         dto = EventDTO(event=event_value, args=args, kwargs=kwargs)
         return dto.model_dump()
 
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch the event to the URL remote target.
 
