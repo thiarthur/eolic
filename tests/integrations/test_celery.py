@@ -179,12 +179,11 @@ def test_celery_listener_event(
     integration.app.tasks["event"]("test_event", "arg1", key="value")
 
 
-def test_celery_module(monkeypatch: pytest.MonkeyPatch, eolic: Eolic, app: Celery):
+def test_celery_module(eolic: Eolic, app: Celery):
     """
     Test that an exception is raised when event_route is None.
 
     Args:
-        monkeypatch: The pytest monkeypatch fixture.
         eolic (Eolic): The Eolic instance.
         app (Celery): The Celery app instance.
     """
@@ -215,12 +214,14 @@ def test_parse_celery_target(target_handler: EventRemoteTargetHandler) -> None:
 
 @pytest.mark.asyncio
 async def test_target_celery_handler(
+    monkeypatch: pytest.MonkeyPatch,
     target_celery_handler: EventRemoteCeleryDispatcher,
 ) -> None:
     """
     Test parsing a dictionary target.
 
     Args:
+        monkeypatch: The pytest monkeypatch fixture.
         target_celery_handler (EventRemoteCeleryDispatcher): An instance of EventRemoteCeleryDispatcher.
     """
 
@@ -228,7 +229,12 @@ async def test_target_celery_handler(
 
         event = "event"
 
-    await target_celery_handler.dispatch(Events.event, "1", "2", "3", {"4": "4"})
+    def send_task_mock(function_name: str, *args, **kwargs):
+        print("{} - {} - {}".format(function_name, args, kwargs))
+
+    monkeypatch.setattr(target_celery_handler.celery, "send_task", send_task_mock)
+
+    await target_celery_handler.dispatch(Events.event, "1", "2", "3", k={"4": "4"})
 
 
 async def test_event_remote_dispatcher_factory(
