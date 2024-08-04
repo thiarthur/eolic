@@ -87,8 +87,14 @@ class EventRemoteTargetHandler(TaskManager):
             address = str(target["address"])
             events: Optional[List[Any]] = target.get("events")
 
-            queue_name = str(target.get("queue_name"))
-            function_name = str(target.get("function_name"))
+            queue_name = (
+                str(target.get("queue_name")) if target.get("queue_name") else None
+            )
+            function_name = (
+                str(target.get("function_name"))
+                if target.get("function_name")
+                else None
+            )
 
             optional_kwargs = {}
 
