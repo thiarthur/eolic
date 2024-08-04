@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
-from typing import Any, Dict, List, Union
-
+from typing import Any, Dict, List, Optional, Union
 import requests
+
+from .task_manager import TaskManager
+
+from .helpers.coroutines import run_coroutine
 
 from .model import (
     EventDTO,
@@ -22,10 +24,10 @@ from .model import (
     EventRemoteURLTarget,
     EventRemoteCeleryTarget,
 )
-from .utils import is_module_installed, get_module
+from .helpers.modules import is_module_installed, get_module
 
 
-class EventRemoteTargetHandler:
+class EventRemoteTargetHandler(TaskManager):
     """
     Handles registration and emission of events to remote targets.
 
@@ -36,13 +38,10 @@ class EventRemoteTargetHandler:
     """
 
     targets: List[EventRemoteTarget] = []
-    futures: List[Future] = []
-    executor: ThreadPoolExecutor
 
     def __init__(self) -> None:
-        """Initialize the EventRemoteTargetHandler with a thread pool executor."""
-        self.executor = ThreadPoolExecutor(max_workers=10)
-        self.futures = []
+        """Initialize the EventRemoteTargetHandler."""
+        super().__init__()
 
     @staticmethod
     def _parse_target(target: Union[str, Dict[str, Any]]) -> EventRemoteTarget:
@@ -85,23 +84,18 @@ class EventRemoteTargetHandler:
             )
 
         elif event_remote_target_type == EventRemoteTargetType.celery:
+            address = str(target["address"])
+            events: Optional[List[Any]] = target.get("events")
+            queue_name = str(target.get("queue_name"))
+            function_name = str(target.get("function_name"))
 
-            event_target_kwargs = {
-                "type": event_remote_target_type,
-                "address": target.get("address"),
-                "events": target.get("events"),
-            }
-
-            if target.get("queue_name"):
-                event_target_kwargs.update({"queue_name": target.get("queue_name")})
-
-            if target.get("function_name"):
-                event_target_kwargs.update(
-                    {"function_name": target.get("function_name")}
-                )
-
-            return EventRemoteCeleryTarget(**event_target_kwargs)
-
+            return EventRemoteCeleryTarget(
+                type=event_remote_target_type,
+                address=address,
+                events=events,
+                queue_name=queue_name,
+                function_name=function_name,
+            )
         return EventRemoteTarget(**target)
 
     def register(self, target: Any) -> None:
@@ -116,7 +110,6 @@ class EventRemoteTargetHandler:
     def clear(self) -> None:
         """Clear all registered targets and futures."""
         self.targets.clear()
-        self.futures.clear()
 
     def emit(self, event: Any, *args, **kwargs) -> None:
         """
@@ -127,19 +120,24 @@ class EventRemoteTargetHandler:
             *args: Variable length argument list for the event.
             **kwargs: Arbitrary keyword arguments for the event.
         """
-        for target in self.targets:
-            if target.events is None or event in target.events:
-                dispatcher = EventRemoteDispatcherFactory().create(target)
-                future = self.executor.submit(
-                    dispatcher.dispatch, event, *args, **kwargs
-                )
-                self.futures.append(future)
+        run_coroutine(self._emit_async, event, *args, **kwargs)
 
-    def wait_for_all(self) -> None:
-        """Wait for all asynchronous tasks to complete."""
-        for future in self.futures:
-            future.result()
-        self.futures.clear()
+    async def _emit_async(self, event: Any, *args, **kwargs) -> None:
+        """
+        Asynchronously emit an event to all registered remote targets.
+
+        Args:
+            event (Any): The event to emit.
+            *args: Variable length argument list for the event.
+            **kwargs: Arbitrary keyword arguments for the event.
+        """
+        dispatcher_factory = EventRemoteDispatcherFactory()
+
+        for target in self.targets:
+            dispatcher = dispatcher_factory.create(target)
+
+            if target.events is None or event in target.events:
+                self.create_task(dispatcher.dispatch, event, *args, **kwargs)
 
 
 class EventRemoteDispatcherFactory:
@@ -173,7 +171,7 @@ class EventRemoteDispatcher(ABC):
     """Abstract base class for event remote dispatchers."""
 
     @abstractmethod
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch an event to the remote target.
 
@@ -220,7 +218,7 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
         dto = EventDTO(event=event_value, args=args, kwargs=kwargs)
         return dto.model_dump()
 
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch the event to the URL remote target.
 
@@ -258,7 +256,7 @@ class EventRemoteCeleryDispatcher(EventRemoteDispatcher):
 
         self.celery = get_module("celery").Celery(self.target.address)
 
-    def dispatch(self, event: Any, *args, **kwargs) -> None:
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
         """
         Dispatch the event to the URL remote target.
 

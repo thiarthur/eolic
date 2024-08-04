@@ -9,7 +9,7 @@ eolic = Eolic()
 
 
 @eolic.on("user_created")
-def handle_user_created(id: int, name: str, email: str):
+async def handle_user_created(id: int, name: str, email: str):
     """Handle the user created event."""
     # Handle the user created event (e.g., send a notification)
     print(f"Notification: User {name} with email {email} was created!")

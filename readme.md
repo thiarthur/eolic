@@ -7,7 +7,7 @@ The main purpose be an effective way to trigger hooks based on events and allow 
 
 ## Documentation
 
-Read more about the usage with our [Documentation](./docs) / [Examples](./examples)
+Read more about the usage with our [Documentation](https://docs.eolic.dev) and [Examples](./examples)
 
 ## Installation
 

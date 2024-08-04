@@ -1,13 +1,15 @@
 """Module for eolic base class."""
 
 import functools
-from typing import Any, Callable, List
+from typing import Any, Callable, List, TypeVar, cast
 
 from eolic.integrations.base import Integration
 
 from .listener import EventListenerHandler
 from .meta.singleton import Singleton
 from .remote import EventRemoteTargetHandler
+
+T = TypeVar("T", bound=Callable[..., Any])
 
 
 class Eolic(metaclass=Singleton):
@@ -67,7 +69,7 @@ class Eolic(metaclass=Singleton):
             Callable: The decorator function.
         """
 
-        def decorator(func):
+        def decorator(func: T) -> T:
             self.listener_handler.register(event, func)
 
             @functools.wraps(func)
@@ -76,7 +78,7 @@ class Eolic(metaclass=Singleton):
                 # it's not showing up in the coverage report
                 return func(*args, **kwargs)  # pragma: no cover
 
-            return wrapper
+            return cast(T, wrapper)
 
         return decorator
 

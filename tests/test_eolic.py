@@ -5,11 +5,10 @@ This module includes tests for initializing Eolic, registering targets and liste
 emitting events, and handling remote targets.
 """
 
+from unittest.mock import patch
 from tests.common import GameEvents
-from pydantic import ValidationError
 from pytest_mock import MockFixture
 import pytest
-import requests
 from eolic import Eolic
 
 from eolic.listener import EventListenerHandler
@@ -28,7 +27,7 @@ def eolic_instance() -> Eolic:
         remote_targets=[
             {
                 "type": "url",
-                "address": "https://webhook.site/test-url",
+                "address": "https://a/test-url",
                 "headers": {"X-Api-Key": "test"},
                 "events": [GameEvents.ON_PLAYER_JOIN],
             }
@@ -36,8 +35,35 @@ def eolic_instance() -> Eolic:
     )
 
 
-# Initialization
-@pytest.mark.order(1)
+@pytest.fixture(autouse=True)
+def clear_instance(eolic_instance: Eolic) -> None:
+    """
+    Fixture to clear targets before each test.
+
+    Args:
+        target_handler (EventRemoteTargetHandler): An instance of EventRemoteTargetHandler.
+    """
+    eolic_instance.listener_handler.clear()
+    eolic_instance.remote_target_handler.clear()
+
+
+def test_instance_with_remote_targets() -> None:
+    Eolic._instances.clear()
+    eolic = Eolic(
+        remote_targets=[
+            {
+                "type": "url",
+                "address": "https://a/test-url",
+                "headers": {"X-Api-Key": "test"},
+                "events": [GameEvents.ON_PLAYER_JOIN],
+            }
+        ]
+    )
+
+    assert len(eolic.remote_target_handler.targets) == 1
+    assert eolic.remote_target_handler.targets[0].address == "https://a/test-url"
+
+
 def test_initialization(eolic_instance: Eolic) -> None:
     """
     Test initialization of Eolic.
@@ -49,52 +75,11 @@ def test_initialization(eolic_instance: Eolic) -> None:
     assert isinstance(eolic_instance.listener_handler, EventListenerHandler)
 
 
-# Registering Targets
-@pytest.mark.order(2)
-def test_register_single_target(eolic_instance: Eolic) -> None:
-    """
-    Test registering a single remote target.
-
-    Args:
-        eolic_instance (Eolic): An instance of Eolic.
-    """
-    target = {
-        "type": "url",
-        "address": "https://webhook.site/another-url",
-        "headers": {"X-Api-Key": "another"},
-        "events": [GameEvents.ON_MONSTER_DEFEATED],
-    }
-    eolic_instance.register_target(target)
-    assert len(eolic_instance.remote_target_handler.targets) == 2
+def test_register_listener(eolic_instance: Eolic) -> None:
+    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, lambda: None)
+    assert len(eolic_instance.listener_handler.listeners) == 1
 
 
-@pytest.mark.order(3)
-def test_register_multiple_targets(eolic_instance: Eolic) -> None:
-    """
-    Test registering multiple remote targets.
-
-    Args:
-        eolic_instance (Eolic): An instance of Eolic.
-    """
-    targets = [
-        {
-            "type": "url",
-            "address": "https://webhook.site/target1",
-            "headers": {"X-Api-Key": "key1"},
-        },
-        {
-            "type": "url",
-            "address": "https://webhook.site/target2",
-            "headers": {"X-Api-Key": "key2"},
-        },
-    ]
-    for target in targets:
-        eolic_instance.register_target(target)
-
-    assert len(eolic_instance.remote_target_handler.targets) == 4
-
-
-@pytest.mark.order(4)
 def test_register_invalid_target(eolic_instance: Eolic) -> None:
     """
     Test handling of invalid remote target registration.
@@ -106,61 +91,6 @@ def test_register_invalid_target(eolic_instance: Eolic) -> None:
         eolic_instance.register_target(123)  # Invalid type
 
 
-# Registering Listeners
-@pytest.mark.order(5)
-def test_register_single_listener(eolic_instance: Eolic) -> None:
-    """
-    Test registering a single event listener.
-
-    Args:
-        eolic_instance (Eolic): An instance of Eolic.
-    """
-
-    def dummy_listener(*args, **kwargs):
-        pass
-
-    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, dummy_listener)
-    listeners = eolic_instance.listener_handler._listener_map[GameEvents.ON_PLAYER_JOIN]
-    assert dummy_listener in listeners
-
-
-@pytest.mark.order(6)
-def test_register_multiple_listeners(eolic_instance: Eolic) -> None:
-    """
-    Test registering multiple event listeners for the same event.
-
-    Args:
-        eolic_instance (Eolic): An instance of Eolic.
-    """
-
-    def listener1(*args, **kwargs):
-        pass
-
-    def listener2(*args, **kwargs):
-        pass
-
-    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, listener1)
-    eolic_instance.register_listener(GameEvents.ON_PLAYER_JOIN, listener2)
-    listeners = eolic_instance.listener_handler._listener_map[GameEvents.ON_PLAYER_JOIN]
-    assert listener1 in listeners and listener2 in listeners
-
-
-@pytest.mark.order(7)
-def test_register_invalid_listener(eolic_instance: Eolic) -> None:
-    """
-    Test handling of invalid event listener registration.
-
-    Args:
-        eolic_instance (Eolic): An instance of Eolic.
-    """
-    with pytest.raises(ValidationError):
-        eolic_instance.register_listener(
-            GameEvents.ON_PLAYER_JOIN, "not a function"
-        )  # Invalid listener
-
-
-# Event Emission
-@pytest.mark.order(8)
 def test_emit_event_to_single_listener(eolic_instance: Eolic) -> None:
     """
     Test emitting an event to a single listener.
@@ -178,7 +108,28 @@ def test_emit_event_to_single_listener(eolic_instance: Eolic) -> None:
     assert "Archer" in results
 
 
-@pytest.mark.order(9)
+def test_emit_event_to_async_listeners(eolic_instance: Eolic) -> None:
+    """
+    Test emitting an event to multiple listeners.
+
+    Args:
+        eolic_instance (Eolic): An instance of Eolic.
+    """
+    results1 = []
+    results2 = []
+
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
+    async def listener1(player_name):
+        results1.append(player_name)
+
+    @eolic_instance.on(GameEvents.ON_PLAYER_JOIN)
+    async def listener2(player_name):
+        results2.append(player_name)
+
+    eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
+    assert "Archer" in results1 and "Archer" in results2
+
+
 def test_emit_event_to_multiple_listeners(eolic_instance: Eolic) -> None:
     """
     Test emitting an event to multiple listeners.
@@ -201,7 +152,6 @@ def test_emit_event_to_multiple_listeners(eolic_instance: Eolic) -> None:
     assert "Archer" in results1 and "Archer" in results2
 
 
-@pytest.mark.order(10)
 def test_emit_event_with_arguments(eolic_instance: Eolic) -> None:
     """
     Test emitting an event with arguments to a listener.
@@ -219,8 +169,6 @@ def test_emit_event_with_arguments(eolic_instance: Eolic) -> None:
     assert ("Archer", "Goblin", 30) in results
 
 
-# Decorator Functionality
-@pytest.mark.order(11)
 def test_decorator_functionality(eolic_instance: Eolic) -> None:
     """
     Test the functionality of the decorator for registering listeners.
@@ -238,7 +186,6 @@ def test_decorator_functionality(eolic_instance: Eolic) -> None:
     assert "Archer" in results
 
 
-@pytest.mark.order(12)
 def test_decorator_preserves_function_properties(eolic_instance: Eolic) -> None:
     """
     Test that the decorator preserves the original function properties.
@@ -256,8 +203,6 @@ def test_decorator_preserves_function_properties(eolic_instance: Eolic) -> None:
     assert handle_player_join.__doc__ == "Create dummy callback for testing."
 
 
-# Remote Target Handling
-@pytest.mark.order(13)
 def test_remote_target_receives_event(
     eolic_instance: Eolic, mocker: MockFixture
 ) -> None:
@@ -268,30 +213,42 @@ def test_remote_target_receives_event(
         eolic_instance (Eolic): An instance of Eolic.
         mocker (MockFixture): The mock fixture for patching.
     """
-    mocker.patch("requests.post")
-    eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
 
-    eolic_instance.remote_target_handler.wait_for_all()
-
-    requests.post.assert_any_call(
-        "https://webhook.site/test-url",
-        json={
-            "event": GameEvents.ON_PLAYER_JOIN.value,
-            "args": ("Archer",),
-            "kwargs": {},
-        },
-        headers={"X-Api-Key": "test"},
-        timeout=10,
+    eolic_instance.register_target(
+        {
+            "type": "url",
+            "address": "https://a/test-url",
+            "headers": {"X-Api-Key": "test"},
+        }
     )
 
-    eolic_instance.emit(GameEvents.ON_MONSTER_DEFEATED, "Archer")
-    requests.post.assert_any_call(
-        "https://webhook.site/test-url",
-        json={
-            "event": GameEvents.ON_PLAYER_JOIN.value,
-            "args": ("Archer",),
-            "kwargs": {},
-        },
-        headers={"X-Api-Key": "test"},
-        timeout=10,
-    )
+    with patch("requests.post") as mock_post:
+        eolic_instance.emit(GameEvents.ON_PLAYER_JOIN, "Archer")
+
+        eolic_instance.remote_target_handler.wait_for_all()
+
+        mock_post.assert_called_once_with(
+            "https://a/test-url",
+            json={
+                "event": GameEvents.ON_PLAYER_JOIN.value,
+                "args": ("Archer",),
+                "kwargs": {},
+            },
+            headers={"X-Api-Key": "test"},
+            timeout=10,
+        )
+
+    with patch("requests.post") as mock_post:
+        eolic_instance.emit(GameEvents.ON_MONSTER_DEFEATED, "Archer")
+        eolic_instance.remote_target_handler.wait_for_all()
+
+        mock_post.assert_called_once_with(
+            "https://a/test-url",
+            json={
+                "event": GameEvents.ON_MONSTER_DEFEATED.value,
+                "args": ("Archer",),
+                "kwargs": {},
+            },
+            headers={"X-Api-Key": "test"},
+            timeout=10,
+        )

@@ -35,7 +35,6 @@ def clear_targets(listener_handler: EventListenerHandler) -> None:
 # Registering Listeners
 
 
-@pytest.mark.order(23)
 def test_register_single_listener(listener_handler: EventListenerHandler) -> None:
     """
     Test registering a single event listener.
@@ -53,7 +52,6 @@ def test_register_single_listener(listener_handler: EventListenerHandler) -> Non
     assert dummy_listener in listeners
 
 
-@pytest.mark.order(24)
 def test_register_multiple_listeners(listener_handler: EventListenerHandler) -> None:
     """
     Test registering multiple event listeners for the same event.
@@ -76,7 +74,23 @@ def test_register_multiple_listeners(listener_handler: EventListenerHandler) -> 
     assert listener2 in listeners
 
 
-@pytest.mark.order(25)
+def test_register_async_listeners(listener_handler: EventListenerHandler) -> None:
+    """
+    Test registering async event listeners for the same event.
+
+    Args:
+        listener_handler (EventListenerHandler): An instance of EventListenerHandler.
+    """
+
+    async def listener(*args, **kwargs):
+        pass
+
+    listener_handler.register(GameEvents.ON_PLAYER_JOIN, listener)
+
+    listeners = listener_handler._listener_map[GameEvents.ON_PLAYER_JOIN]
+    assert len(listeners) == 1
+
+
 def test_register_listeners_for_different_events(
     listener_handler: EventListenerHandler,
 ) -> None:
@@ -106,7 +120,6 @@ def test_register_listeners_for_different_events(
 # Event Listener Map
 
 
-@pytest.mark.order(26)
 def test_listener_map_structure(listener_handler: EventListenerHandler) -> None:
     """
     Test the structure of the listener map.
@@ -129,7 +142,6 @@ def test_listener_map_structure(listener_handler: EventListenerHandler) -> None:
 # Listener Execution
 
 
-@pytest.mark.order(27)
 def test_listener_execution(listener_handler: EventListenerHandler) -> None:
     """
     Test the execution of a registered listener.
@@ -149,7 +161,6 @@ def test_listener_execution(listener_handler: EventListenerHandler) -> None:
     assert "executed" in results
 
 
-@pytest.mark.order(28)
 def test_listener_execution_with_arguments(
     listener_handler: EventListenerHandler,
 ) -> None:

@@ -10,7 +10,6 @@ app = FastAPI()
 eolic = Eolic(
     remote_targets=[
         "http://127.0.0.1:8001/user-events",
-        "https://webhook.site/02479cf4-12e7-4d68-a900-c3f9e1daba56",
     ]
 )
 
