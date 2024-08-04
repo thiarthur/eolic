@@ -5,9 +5,11 @@ This module includes tests for parsing, registering, and emitting events
 to remote targets using the EventRemoteTargetHandler class.
 """
 
-import pytest
-from eolic.remote import EventRemoteTargetHandler, EventRemoteURLTarget
 from unittest.mock import patch
+
+import pytest
+
+from eolic.remote import EventRemoteTargetHandler, EventRemoteURLTarget
 from tests.common import GameEvents
 
 
@@ -77,6 +79,27 @@ def test_parse_invalid_target(target_handler: EventRemoteTargetHandler) -> None:
     """
     with pytest.raises(TypeError):
         target_handler._parse_target(123)  # Invalid type
+
+
+def test_parse_target_type_error(target_handler: EventRemoteTargetHandler) -> None:
+    """
+    Test handling of invalid target formats.
+
+    Args:
+        target_handler (EventRemoteTargetHandler): An instance of EventRemoteTargetHandler.
+    """
+    with pytest.raises(TypeError):
+        target_handler._parse_target({"type": 123})  # Invalid type
+
+
+def test_event_remote_type_not_exists(target_handler: EventRemoteTargetHandler) -> None:
+    """
+    Test handling of invalid target formats.
+
+    Args:
+        target_handler (EventRemoteTargetHandler): An instance of EventRemoteTargetHandler.
+    """
+    target_handler._parse_target({"type": "rabbitmq", "address": ""})
 
 
 # Registering Targets
