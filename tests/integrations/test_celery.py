@@ -6,7 +6,7 @@ from celery import Celery
 from eolic.base import Eolic
 from eolic.integrations.celery import CeleryIntegration
 from eolic.model import EventDTO
-from eolic.utils import get_module
+from eolic.helpers.modules import get_module
 
 
 @pytest.fixture

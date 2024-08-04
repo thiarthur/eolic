@@ -1,4 +1,4 @@
-"""File containing utility functions for various tasks."""
+"""File containing helpers for modules."""
 
 import importlib.util
 

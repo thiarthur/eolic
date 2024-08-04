@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 from ..base import Integration
 from ..model import EventDTO
-from ..utils import is_module_installed
+from ..helpers.modules import is_module_installed
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
