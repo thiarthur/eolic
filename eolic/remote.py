@@ -86,15 +86,22 @@ class EventRemoteTargetHandler(TaskManager):
         elif event_remote_target_type == EventRemoteTargetType.celery:
             address = str(target["address"])
             events: Optional[List[Any]] = target.get("events")
+
             queue_name = str(target.get("queue_name"))
             function_name = str(target.get("function_name"))
+
+            optional_kwargs = {}
+
+            if queue_name:
+                optional_kwargs["queue_name"] = queue_name
+            if function_name:
+                optional_kwargs["function_name"] = function_name
 
             return EventRemoteCeleryTarget(
                 type=event_remote_target_type,
                 address=address,
                 events=events,
-                queue_name=queue_name,
-                function_name=function_name,
+                **optional_kwargs,
             )
         return EventRemoteTarget(**target)
 
