@@ -3,7 +3,7 @@
 import functools
 from typing import Any, Callable, List, TypeVar, cast
 
-from eolic.integrations.base import Integration
+from .integrations.base import Integration
 
 from .listener import EventListenerHandler
 from .meta.singleton import Singleton
