@@ -33,6 +33,9 @@ This example demonstrates how to integrate Eolic Celery to handle events, such a
 
 ## Running
 
+**Note:** To run Celery, you will need a queue service or any other backend to run it. In this example, we are using [RabbitMQ](https://www.rabbitmq.com/tutorials). See more at the [Celery documentation](https://docs.celeryq.dev/en/stable/getting-started/introduction.html).
+
+
 1. **Start the Notification Service**:
     ```bash
     celery -A 'examples.integrations.celery_plugin.celery_notification_service' worker --loglevel=INFO -Q eolic
