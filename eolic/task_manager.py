@@ -4,7 +4,7 @@ import asyncio
 import atexit
 import signal
 from typing import Any, Callable
-from eolic.helpers.coroutines import run_coroutine
+from .helpers.coroutines import run_coroutine
 
 
 class TaskManager:

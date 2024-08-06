@@ -1,9 +1,11 @@
-import sys
-from fastapi.testclient import TestClient
+import importlib.util
+
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 from eolic.base import Eolic
 from eolic.integrations.fastapi import FastAPIIntegration
-from fastapi import FastAPI
 from eolic.model import EventDTO
 
 
@@ -96,7 +98,8 @@ def test_fastapi_not_installed(monkeypatch: pytest.MonkeyPatch, app: FastAPI):
         monkeypatch: The pytest monkeypatch fixture.
         app (FastAPI): The FastAPI app instance.
     """
-    monkeypatch.delitem(sys.modules, "fastapi", raising=False)
+    monkeypatch.setattr(importlib.util, "find_spec", lambda _: None)
+
     with pytest.raises(Exception, match="FastAPI Integration is not installed..*"):
         FastAPIIntegration(app=app)
 

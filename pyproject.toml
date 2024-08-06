@@ -16,10 +16,12 @@ pydantic = "^2.8.2"
 requests = "^2.32.3"
 fastapi = { version="*", optional= true }
 uvicorn = { version="*", optional= true }
+celery = { version="*", optional= true }
 
 [tool.poetry.extras]
 fastapi = ["fastapi", "uvicorn"]
-all = ["fastapi", "uvicorn"]
+celery = ["celery"]
+all = ["fastapi", "uvicorn", "celery"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
@@ -31,7 +33,6 @@ pydocstyle = "^6.3.0"
 flake8-pyproject = "^1.2.3"
 commitizen = "^3.28.0"
 httpx = "^0.27.0"
-
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.2"
@@ -54,6 +55,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 exclude = ["tests/"]
+no_namespace_packages = true
+ignore_missing_imports = true
 
 [tool.flake8]
 max-line-length = 105

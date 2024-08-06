@@ -7,13 +7,13 @@ to remote targets, and handling different types of event remote targets.
 
 from __future__ import annotations
 
-from enum import Enum
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 import requests
 
-from eolic.task_manager import TaskManager
+from .task_manager import TaskManager
 
 from .helpers.coroutines import run_coroutine
 
@@ -22,7 +22,9 @@ from .model import (
     EventRemoteTarget,
     EventRemoteTargetType,
     EventRemoteURLTarget,
+    EventRemoteCeleryTarget,
 )
+from .helpers.modules import is_module_installed, get_module
 
 
 class EventRemoteTargetHandler(TaskManager):
@@ -41,7 +43,8 @@ class EventRemoteTargetHandler(TaskManager):
         """Initialize the EventRemoteTargetHandler."""
         super().__init__()
 
-    def _parse_target(self, target: Any) -> EventRemoteTarget:
+    @staticmethod
+    def _parse_target(target: Union[str, Dict[str, Any]]) -> EventRemoteTarget:
         """
         Parse and convert a target to an EventRemoteTarget instance.
 
@@ -52,18 +55,60 @@ class EventRemoteTargetHandler(TaskManager):
             EventRemoteTarget: Parsed remote target.
         """
         if isinstance(target, str):
-            return EventRemoteURLTarget(
-                type=EventRemoteTargetType("url"), address=target
+            target = {"type": "url", "address": target}
+
+        if not isinstance(target, dict):
+            raise TypeError(
+                "Target needs to be of type str or Dict[str, str] but received {}".format(
+                    type(target)
+                )
             )
 
-        if isinstance(target, dict):
+        target_type = target.get("type")
+
+        if not isinstance(target_type, str):
+            raise TypeError(
+                "Target type needs to be of type str but received {}".format(
+                    type(target_type)
+                )
+            )
+
+        event_remote_target_type = EventRemoteTargetType[target_type]
+
+        if event_remote_target_type == EventRemoteTargetType.url:
             return EventRemoteURLTarget(
-                type=EventRemoteTargetType("url"),
+                type=event_remote_target_type,
                 address=target["address"],
                 headers=target.get("headers", {}),
                 events=target.get("events"),
             )
 
+        elif event_remote_target_type == EventRemoteTargetType.celery:
+            address = str(target["address"])
+            events: Optional[List[Any]] = target.get("events")
+
+            queue_name = (
+                str(target.get("queue_name")) if target.get("queue_name") else None
+            )
+            function_name = (
+                str(target.get("function_name"))
+                if target.get("function_name")
+                else None
+            )
+
+            optional_kwargs = {}
+
+            if queue_name:
+                optional_kwargs["queue_name"] = queue_name
+            if function_name:
+                optional_kwargs["function_name"] = function_name
+
+            return EventRemoteCeleryTarget(
+                type=event_remote_target_type,
+                address=address,
+                events=events,
+                **optional_kwargs,
+            )
         return EventRemoteTarget(**target)
 
     def register(self, target: Any) -> None:
@@ -126,6 +171,9 @@ class EventRemoteDispatcherFactory:
         """
         if isinstance(target, EventRemoteURLTarget):
             return EventRemoteURLDispatcher(target)
+
+        if isinstance(target, EventRemoteCeleryTarget):
+            return EventRemoteCeleryDispatcher(target)
 
         raise NotImplementedError(
             f"EventRemoteDispatcher for {target.type} not implemented"
@@ -199,3 +247,47 @@ class EventRemoteURLDispatcher(EventRemoteDispatcher):
             timeout=10,
         )
         logging.debug(f"Response from {self.target.address}: {response.status_code}")
+
+
+class EventRemoteCeleryDispatcher(EventRemoteDispatcher):
+    """Dispatcher for Celery remote targets."""
+
+    def __init__(self, target: EventRemoteCeleryTarget) -> None:
+        """
+        Initialize the Celery dispatcher with a target.
+
+        Args:
+            target (EventRemoteCeleryTarget): The Celery remote target.
+        """
+        self.target = target
+
+        if not is_module_installed("celery"):
+            raise Exception(
+                "Celery Integration is not installed. "
+                "Please install eolic[celery] (using celery extras) to use this integration."
+            )
+
+        self.celery = get_module("celery").Celery(self.target.address)
+
+    async def dispatch(self, event: Any, *args, **kwargs) -> None:
+        """
+        Dispatch the event to the URL remote target.
+
+        Args:
+            event (Any): The event to dispatch.
+            *args: Variable length argument list for the event.
+            **kwargs: Arbitrary keyword arguments for the event.
+        """
+        event_value = str(event)
+
+        if isinstance(event, Enum):
+            event_value = event.value
+
+        task = self.celery.send_task(
+            self.target.function_name,
+            args=[event_value, *args],
+            kwargs=kwargs,
+            queue=self.target.queue_name,
+        )
+
+        logging.debug(f"Celery task id {task}")
