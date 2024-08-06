@@ -38,13 +38,13 @@ This example demonstrates how to use Eolic to integrate event handling between t
 1. **Start the User Service**:
 
     ```bash
-    python user_service.py
+    python fastapi_user_service.py
     Start the Notification Service:
     ```
 
 2. **Start the Notification Service**:
     ```bash
-    python notification_service.py
+    python fastapi_notification_service.py
     ```
 
 3. **Create a New User**:
